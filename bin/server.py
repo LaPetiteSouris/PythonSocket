@@ -1,6 +1,6 @@
 __author__ = 'tung'
 
-from server import TCPServer
+from bin.server import TCPServer
 
 server=TCPServer()
 if server.startauth_handshake():

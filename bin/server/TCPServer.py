@@ -1,8 +1,9 @@
 __author__ = 'tung'
 import socket
-from users import Users
 import random
 import hashlib
+
+from bin.server.users import Users
 
 
 class TCPServer:
