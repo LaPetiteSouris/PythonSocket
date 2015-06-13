@@ -1,10 +1,13 @@
 __author__ = 'tung'
 
 from bin.server import TCPServer
-
+from bin.server import UDPServer
 server=TCPServer()
-if server.startauth_handshake():
-    print 'Hand shake completed. Initiated communication...'
+hashkey=server.startauth_handshake()
+if hashkey:
+    print ('Hand shake completed. Data transmission initiated...')
     #TO-DO: Start UDP transmission here
+    udpserver =UDPServer()
+    udpserver.startTransmission(hashkey)
 
 

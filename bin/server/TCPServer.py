@@ -7,7 +7,7 @@ from bin.server.users import Users
 
 
 class TCPServer:
-    def __init__(self, host='127.0.0.1', port=8080, user_namelist=[]):
+    def __init__(self, host='127.0.0.1', port=8081, user_namelist=[]):
         self._host = host
         self._port = port
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,37 +27,40 @@ class TCPServer:
         s = self._sock
         s.bind((self._host, self._port))
         s.listen(2)
-        while True:
-            connection, addr = s.accept()
-            username = connection.recv(255)
-            print ('Received data from address: ', addr)
-            if username:
-                # Check if username exists
-                r = self.userchecking(username)
-                if r != -1:
-                    print ('Server responding')
-                    connection.sendall(str(r))
-                    # H1
-                    h1 = connection.recv(255)
-                    # Calculate H2
-                    h2 = str(self._p1) + str(r)
-                    h2hash = self.hashcalculator(h2)
-                    # Auth success
-                    if h2hash == h1:
-                        connection.sendall('Done')
-                        print('Connection accepted. Auth completed')
-                        connection.close()
-                        break
-                    # Auth fails
-                    elif h2hash != h1:
+        try:
+            while True:
+                connection, addr = s.accept()
+                username = connection.recv(255)
+                print ('Received request from address: ', addr)
+                if username:
+                    # Check if username exists
+                    r = self.userchecking(username)
+                    if r != -1:
+                        print ('Server challenging for password...')
+                        connection.sendall(str(r))
+                        # H1
+                        h1 = connection.recv(255)
+                        # Calculate H2
+                        h2 = str(self._p1) + str(r)
+                        h2hash = self.hashcalculator(h2)
+                        # Auth success
+                        if h2hash == h1:
+                            connection.sendall('Done')
+                            print('Client answer accepted. Authentication completed')
+                            connection.close()
+                            break
+                        # Auth fails
+                        elif h2hash != h1:
+                            connection.sendall('Failed')
+                            connection.close()
+                            print('Client answer not accpeted. Authentication failed')
+                    elif r == -1:
+                        print('User does not exist !')
                         connection.sendall('Failed')
                         connection.close()
-                        print('Connection closed. Auth failed')
-                elif r == -1:
-                    print('User does not exist !')
-                    connection.sendall('Failed')
-                    connection.close()
-        return True
+        finally:
+            connection.close()
+            return h2hash
 
     def userchecking(self, username):
         for user in self._listuser:
